@@ -22,34 +22,36 @@ struct BigInt {
 };
 void copy_big_int(const struct BigInt *from, struct BigInt *to)
 {
-	int len = to->digits_count;
-	for (int i = 0; i < len; i++)
-	{
-		to->digits[i] = from-> digits[i];
+
+	if (from->digits_count > to->digits_count) {
+		to->digits_count = from-> digits_count;
+	}
+	for (int i = from->digits_count -1; i < from->digits_count; i++) {
+		to->digits[i] = from->digits[i];
 	}
 }
 int strtobig_int(const char *str, int len, struct BigInt *big_int)
 {
-		if(len > 80)
+		if(len > MAX_DIGITS)
 		{
 			printf("Error:-1 input to long\n");
 			big_int -> digits_count = -1;
 			return -1;
 		}
-		for (int i = 0; i < len; i++) {
-		{
+		int nextDigit= 0;
+		for (int i = len-1; i >= 0; i--) {
+
 			if (str[i] >=  '0' && str[i] <='9')
 			{
-				big_int->digits[i] = str[i] - '0';
-
+				big_int->digits[nextDigit] = str[i] - '0';
+				nextDigit++;
 			}
 			else
 			{
 				printf("Error= -2 invalid input\n");
 				big_int->digits_count = -2;
-				return -2;
+				return nextDigit;
 			}
-		}
 		}
 		big_int->digits_count = len;
 		return len;
@@ -57,46 +59,61 @@ int strtobig_int(const char *str, int len, struct BigInt *big_int)
 
 void print_big_int(const struct BigInt *big_int)
 {
-	for (int i = 0; i < big_int->digits_count; i++) {
+	for (int i = big_int->digits_count - 1; i >= 0 ; i--)
+	{
 		printf("%d", big_int->digits[i]);
 	}
 }
 
 void multiply(const struct BigInt *big_int, int factor, struct BigInt *big_result)
 {
-	factor = 2;
 	int uebertrag = 0;
 	int len = big_int->digits_count;
-	int bigIntNumber = len;
-	for (factor = 2; factor < 10; factor++)
+
+	for(int bigIntNumber = 0; bigIntNumber < len ;bigIntNumber++)
 	{
-		for(int bigIntNumber; bigIntNumber > 0; bigIntNumber--);
-		{
-			big_result->digits[bigIntNumber] = ((big_int->digits[bigIntNumber] * factor) + uebertrag)%10;
-			uebertrag =  ((big_int-> digits[bigIntNumber] * factor) - ((big_int -> digits[bigIntNumber] * factor) % 10))/10;
-			print_big_int(big_int);
-			printf(" * %d = ",factor);
-			print_big_int(big_result);
-
-			copy_big_int(big_int, big_result);
-			printf("\n");
-		}
+		int currentDigit = big_int->digits[bigIntNumber];
+		int number = currentDigit * factor + uebertrag;
+		big_result->digits[bigIntNumber] = number % 10;
+		uebertrag = number / 10;
 	}
+	if (uebertrag > 0)
+	{
+			big_result->digits_count = len+1;
+			big_result->digits[len]= uebertrag;
+	}
+	else
+	{
+		big_result->digits_count = len;
+	}
+
 }
+void divide(const struct BigInt *big_int, int divisor, struct BigInt *big_result)
+{
+	int rest = 0;
+	int number = 0;
+	int len = big_int-> digits_count;
+	for (int j = len; j >= 0; j--)
+	{
+		rest = big_int->digits[j] % divisor;
+		if(big_int->digits[j] / divisor == 0 )
+		{
+			big_result->digits[j] = big_int->digits[j] / divisor;								// 3 = 6/2
+		}
+		else if((big_int->digits[j] * 10 + big_int->digits[j-1])/divisor == 0)
+		{
+			number = big_int->digits[j] * 10 + big_int->digits[j-1];					// 1 * 10 + 2 = 12
+			big_result->digits[j]  = number / divisor;												// 6 = 12 / 2
+		}
+		else
+		{
+			rest = big_int->digits[j] % divisor; 															// 13 % 2 = 11
+			big_result->digits[j] = rest * 10 + big_int->digits[j+1];		//
+		}
 
-void divide(const struct BigInt *big_int, int divisor, struct BigInt *big_result);
-//{
-	//divisor = 0;
-	//int rest = 0;
-	//int number = 0;
-	//int len = big_int-> digits_count;
+	}
 
-	//for (int j = 0; j < len; j+2)
-	//{
-		//number = big_int->digits[i] * 10 + big_int->digits[i+1];
-	//}
-
- //}
+}
 
 
 int main(int argc, char *argv[])
@@ -109,6 +126,21 @@ int main(int argc, char *argv[])
   int len = strlen(input);
   int charsConvertet = strtobig_int(input, len, &big_int);
 	printf("%d Convertet Numbers\n", charsConvertet );
-	multiply(&big_int,2, &result);
+	for(int factor = 2; factor < 10; factor++)
+	{
+		multiply(&big_int, factor, &result);
+		print_big_int(&big_int);
+		printf(" * %d = ",factor);
+		print_big_int(&result);
+		printf("\n");
+		copy_big_int(&big_int,&result);
+	}
+	for (int divisor = 9; divisor >= 2; divisor--)
+	{
+		//divide(&big_int,divisor,&result);
+		//print_big_int(&big_int);
+		//printf("/ %d = ", divisor);
+		//print_big_int(&big_result);
+	}
 	return 0;
 }
