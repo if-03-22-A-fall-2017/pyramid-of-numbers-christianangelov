@@ -91,27 +91,31 @@ void multiply(const struct BigInt *big_int, int factor, struct BigInt *big_resul
 void divide(const struct BigInt *big_int, int divisor, struct BigInt *big_result)
 {
 	int rest = 0;
-	int number = 0;
+
 	int len = big_int-> digits_count;
 	for (int j = len; j >= 0; j--)
 	{
-		rest = big_int->digits[j] % divisor;
-		if(big_int->digits[j] / divisor == 0 )
+		int currentDigit = big_result->digits[j];
+		int number =(currentDigit + rest * 10) / divisor;
+		if(number == 0)
 		{
-			big_result->digits[j] = big_int->digits[j] / divisor;								// 3 = 6/2
+			rest = currentDigit % 10;
 		}
-		else if((big_int->digits[j] * 10 + big_int->digits[j-1])/divisor == 0)
-		{
-			number = big_int->digits[j] * 10 + big_int->digits[j-1];					// 1 * 10 + 2 = 12
-			big_result->digits[j]  = number / divisor;												// 6 = 12 / 2
+		else{
+			rest = (currentDigit + rest *10) -(number * divisor);
 		}
-		else
-		{
-			rest = big_int->digits[j] % divisor; 															// 13 % 2 = 11
-			big_result->digits[j] = rest * 10 + big_int->digits[j+1];		//
-		}
-
+		big_result->digits[j] = number % 10;
 	}
+	if (rest > 0) {
+		big_result->digits_count = len;
+		for (int i = len; i >= 0; i--) {
+			int cross = big_result->digits[i];
+			big_result->digits[i+1] = cross;
+		}
+		big_result->digits[len + 1] = rest;
+	}
+
+
 
 }
 
@@ -137,10 +141,12 @@ int main(int argc, char *argv[])
 	}
 	for (int divisor = 9; divisor >= 2; divisor--)
 	{
-		//divide(&big_int,divisor,&result);
-		//print_big_int(&big_int);
-		//printf("/ %d = ", divisor);
-		//print_big_int(&big_result);
+		divide(&big_int,divisor,&result);
+		print_big_int(&big_int);
+		printf(" / %d = ", divisor);
+		print_big_int(&result);
+		printf("\n");
+		copy_big_int(&big_int,&result);
 	}
 	return 0;
 }
