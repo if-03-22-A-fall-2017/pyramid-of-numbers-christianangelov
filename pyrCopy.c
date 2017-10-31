@@ -22,13 +22,10 @@ struct BigInt {
 };
 void copy_big_int(const struct BigInt *from, struct BigInt *to)
 {
-
-	if (from->digits_count > to->digits_count) {
-		to->digits_count = from-> digits_count;
-	}
-	for (int i = from->digits_count -1; i < from->digits_count; i++) {
+	for (size_t i = 0; i <= from->digits_count; i++) {
 		to->digits[i] = from->digits[i];
 	}
+	to->digits_count = from->digits_count +1;
 }
 int strtobig_int(const char *str, int len, struct BigInt *big_int)
 {
